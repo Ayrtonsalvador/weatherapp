@@ -1,11 +1,8 @@
 var express = require('express');
 var router = express.Router();
+var request = require('sync-request');
 
-var cityList = [
-  {name:"Paris",desc: "Couvert", img:"/images/picto-1.png",temp_min:2, temp_max:19},
-  {name:"Marseille",desc: "Couvert", img:"/images/picto-1.png",temp_min:4, temp_max:12},
-  {name:"Lyon",desc: "Couvert", img:"/images/picto-1.png",temp_min:0, temp_max:10},
- ]
+var cityList = []
 
 /* GET weather page. */
 router.get('/weather', function(req, res, next) {
@@ -19,6 +16,10 @@ router.get('/login', function(req, res, next) {
 
 /* POST add a city */
 router.post('/add-city', function(req, res, next) {
+
+  var result = request("GET", `https://api.openweathermap.org/data/2.5/weather?q=${req.body.newcity}&lang=fr&units=metric&appid=40133caf6b3b044ed3960696e0c0a4e2`);
+  var resultAPI = JSON.parse(result.body);
+
   var alreadyExist = false;
 
   for(var i=0; i<cityList.length;i++){
@@ -27,16 +28,16 @@ router.post('/add-city', function(req, res, next) {
     }
   }
 
-  if(alreadyExist == false){
+  if(alreadyExist == false && resultAPI.name){
     cityList.push({
       name: req.body.newcity,
-      desc: "Couvert",
-      img: "/images/picto-1.png",
-      temp_min: 2,
-      temp_max: 19
+      desc: resultAPI.weather[0].description,
+      img: "http://openweathermap.org/img/wn/"+resultAPI.weather[0].icon+".png",
+      temp_min: resultAPI.main.temp_min,
+      temp_max: resultAPI.main.temp_max,
     })
   }
-   
+
   res.render('weather', { cityList });
 });
 

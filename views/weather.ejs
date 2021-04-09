@@ -29,8 +29,8 @@
 
         <form action="/add-city" method="POST">
              <div class="input-group mb-3">
-                 <input type="text" name="newcity"  class="form-control" placeholder="Tapez le nom d'une ville" aria-label="Recipient's username" aria-describedby="button-addon2">
-                 <input type="submit" class="btn btn-outline-secondary" id="button-addon2"></input>
+                 <input type="text" name="newcity" class="form-control" placeholder="Tapez le nom d'une ville" aria-label="Recipient's username" aria-describedby="button-addon2">
+                 <button class="btn btn-warning" type="submit" id="button-addon2">Add</button>
              </div>
         </form>
     </div>
@@ -54,12 +54,12 @@
         <% for(var i = 0; i < cityList.length; i++){ %>
 
         <div class="card">
-            <div class="card-body row">
+            <div class="card-body row align-items-center d-flex justify-content-between">
 
                 <div class="col">
                     <%= cityList[i].name %>
                 </div>
-                <div class="col">
+                <div class="col align-items-center d-flex justify-content-between">
                      <span><%= cityList[i].desc %></span>
                      <img src="<%= cityList[i].img %>">
                      <span class="badge rounded-pill bg-warning"><%= cityList[i].temp_max %></span>
