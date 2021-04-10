@@ -1,11 +1,13 @@
 var express = require('express');
 var router = express.Router();
 var request = require('sync-request');
-
-var cityList = []
+var cityModel = require('./bdd');
 
 /* GET weather page. */
-router.get('/weather', function(req, res, next) {
+router.get('/weather', async function(req, res, next) {
+
+  var cityList = await cityModel.find();
+
   res.render('weather', { cityList });
 });
 
@@ -15,28 +17,26 @@ router.get('/login', function(req, res, next) {
 });
 
 /* POST add a city */
-router.post('/add-city', function(req, res, next) {
+router.post('/add-city', async function(req, res, next) {
 
   var result = request("GET", `https://api.openweathermap.org/data/2.5/weather?q=${req.body.newcity}&lang=fr&units=metric&appid=40133caf6b3b044ed3960696e0c0a4e2`);
   var resultAPI = JSON.parse(result.body);
 
-  var alreadyExist = false;
+  var alreadyExist = await cityModel.findOne({ name: req.body.newcity.toLowerCase() });  
 
-  for(var i=0; i<cityList.length;i++){
-    if(req.body.newcity.toLowerCase() == cityList[i].name.toLowerCase() ){
-      alreadyExist = true;
-    }
-  }
-
-  if(alreadyExist == false && resultAPI.name){
-    cityList.push({
-      name: req.body.newcity,
+  if(alreadyExist == null && resultAPI.name){
+    var newCity = new cityModel({
+      name: req.body.newcity.toLowerCase(),
       desc: resultAPI.weather[0].description,
       img: "http://openweathermap.org/img/wn/"+resultAPI.weather[0].icon+".png",
       temp_min: resultAPI.main.temp_min,
       temp_max: resultAPI.main.temp_max,
-    })
+    });
+    
+    await newCity.save();
   }
+
+  cityList = await cityModel.find();
 
   res.render('weather', { cityList });
 });
