@@ -42,8 +42,37 @@ router.post('/add-city', async function(req, res, next) {
 });
 
 /* GET delete a city */
-router.get('/delete-city', function(req, res, next) {
-  cityList.splice(req.query.position, 1)
+router.get('/delete-city', async function(req, res, next) {
+
+  await cityModel.deleteOne({
+    _id: req.query.id
+  } );
+
+  var cityList = await cityModel.find();  
+
+  res.render('weather', { cityList });
+});
+
+/* GET update cities' data */
+router.get('/update-cities', async function(req, res, next) {
+
+  var cityList = await cityModel.find(); 
+
+  for(var i = 0; i < cityList.length; i++) {
+  var result = request("GET", `https://api.openweathermap.org/data/2.5/weather?q=${cityList[i].name}&lang=fr&units=metric&appid=40133caf6b3b044ed3960696e0c0a4e2`);
+  var resultAPI = JSON.parse(result.body);
+
+  await cityModel.updateOne(
+    {_id: cityList[i].id}, {
+      name: cityList[i].name,
+      desc: resultAPI.weather[0].description,
+      img: "http://openweathermap.org/img/wn/"+resultAPI.weather[0].icon+".png",
+      temp_min: resultAPI.main.temp_min,
+      temp_max: resultAPI.main.temp_max}
+    );
+  }
+  cityList = await cityModel.find();
+
   res.render('weather', { cityList });
 });
 

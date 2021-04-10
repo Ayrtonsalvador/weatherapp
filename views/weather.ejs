@@ -45,7 +45,7 @@
     <!-- DATA -->
        <div class="data col-11 col-md-6 text-center">
 
-        <div class="maj">Mettre à jour <i class="fas fa-sync-alt"></i></div>
+        <div class="maj">Mettre à jour <a href="/update-cities"><i class="fas fa-sync-alt"></i></a></div>
         
         <% if(cityList.length == 0) { %>
                 <span class="empty">Aucune ville à afficher</span>
@@ -66,7 +66,7 @@
                      <span class="badge rounded-pill bg-primary"><%= cityList[i].temp_min %></span>
                 </div>
                 <div class="col">
-                    <a href="/delete-city?position=<%i%>"><i class="far fa-times-circle"></i></a>
+                    <a href="/delete-city?id=<%=cityList[i].id%>"><i class="far fa-times-circle"></i></a>
                 </div>
 
             </div>
