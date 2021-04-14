@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
 var request = require('sync-request');
-var cityModel = require('./bdd');
+var cityModel = require('../models/cities');
+var userModel = require('../models/users');
 
 /* GET weather page. */
 router.get('/weather', async function(req, res, next) {
@@ -12,7 +13,7 @@ router.get('/weather', async function(req, res, next) {
 });
 
 /* GET login page. */
-router.get('/login', function(req, res, next) {
+router.get('/', function(req, res, next) {
   res.render('login', {  });
 });
 
@@ -74,6 +75,42 @@ router.get('/update-cities', async function(req, res, next) {
   cityList = await cityModel.find();
 
   res.render('weather', { cityList });
+});
+
+/* POST Register a new user */
+router.post('/signup', async function(req, res, next) {
+
+  var userExists = await userModel.findOne({ email: req.body.email });  
+  if(userExists == null) {
+    var newUser = new userModel({
+      name: req.body.name,
+      email: req.body.email,
+      password: req.body.password
+    })
+
+    var newUserSaved = await newUser.save()
+
+    req.session.user = {
+      name: newUserSaved.name,
+      id: newUserSaved._id,}
+
+    console.log(req.session.user)
+
+  res.redirect('/weather') 
+} else { res.redirect('/') }
+  
+});
+
+/* POST Signin a new user */
+router.post('/signin', async function(req, res, next) {
+
+  res.render('signin', {  });
+});
+
+/*  GET Logout session */
+router.get('/logout', function(req,res,next){
+  req.session.user = null;
+  res.redirect('/')
 });
 
 module.exports = router;
