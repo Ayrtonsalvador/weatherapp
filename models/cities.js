@@ -5,7 +5,9 @@ var citySchema = mongoose.Schema({
     desc: String,
     img: String,
     temp_max: Number,
-    temp_min: Number});
+    temp_min: Number,
+    lon: Number,
+    lat: Number});
    
 var cityModel = mongoose.model('savedcities', citySchema);
 

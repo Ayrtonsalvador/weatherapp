@@ -4,17 +4,18 @@ var request = require('sync-request');
 var cityModel = require('../models/cities');
 var userModel = require('../models/users');
 
-/* GET weather page. */
-router.get('/weather', async function(req, res, next) {
-
-  var cityList = await cityModel.find();
-
-  res.render('weather', { cityList });
+/* GET home - login page. */
+router.get('/', function(req, res, next) {
+  res.render('login');
 });
 
-/* GET login page. */
-router.get('/', function(req, res, next) {
-  res.render('login', {  });
+/* GET weather page. */
+router.get('/weather', async function(req, res, next) {
+  if(!req.session.user){
+    res.redirect('/')
+  } else { var cityList = await cityModel.find();
+  res.render('weather', { cityList });
+}
 });
 
 /* POST add a city */
@@ -32,6 +33,8 @@ router.post('/add-city', async function(req, res, next) {
       img: "http://openweathermap.org/img/wn/"+resultAPI.weather[0].icon+".png",
       temp_min: resultAPI.main.temp_min,
       temp_max: resultAPI.main.temp_max,
+      lon: resultAPI.coord.lon,
+      lat: resultAPI.coord.lat,
     });
     
     await newCity.save();
@@ -44,13 +47,8 @@ router.post('/add-city', async function(req, res, next) {
 
 /* GET delete a city */
 router.get('/delete-city', async function(req, res, next) {
-
-  await cityModel.deleteOne({
-    _id: req.query.id
-  } );
-
+  await cityModel.deleteOne({ _id: req.query.id } );
   var cityList = await cityModel.find();  
-
   res.render('weather', { cityList });
 });
 
@@ -80,8 +78,8 @@ router.get('/update-cities', async function(req, res, next) {
 /* POST Register a new user */
 router.post('/signup', async function(req, res, next) {
 
-  var userExists = await userModel.findOne({ email: req.body.email });  
-  if(userExists == null) {
+  var searchUser = await userModel.findOne({ email: req.body.email });  
+  if(!searchUser) {
     var newUser = new userModel({
       name: req.body.name,
       email: req.body.email,
@@ -104,7 +102,17 @@ router.post('/signup', async function(req, res, next) {
 /* POST Signin a new user */
 router.post('/signin', async function(req, res, next) {
 
-  res.render('signin', {  });
+  var searchUser = await userModel.findOne({ email: req.body.email,
+                                            password: req.body.password });
+  if(searchUser!= null) {  
+    req.session.user = {
+      name: searchUser.name,
+      id: searchUser._id
+    }
+
+    res.redirect('/weather') 
+} else { res.render('login') }
+  
 });
 
 /*  GET Logout session */
